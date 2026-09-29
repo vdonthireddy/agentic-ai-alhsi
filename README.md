@@ -5,6 +5,12 @@
 
 ---
 
+### 📖 Documentation Quicklinks
+- 📘 [**Layman's Guide (`LAYMAN_GUIDE.md`)**](LAYMAN_GUIDE.md): Simple, everyday guide explaining the kitchen metaphor, why the harness prevents cheating, and how to use the dashboard without technical jargon.
+- 📐 [**Technical Architecture (`ARCHITECTURE.md`)**](ARCHITECTURE.md): Full engineering specification covering the state machine, SHA-256 anti-tampering, subprocess sandboxing, git rollbacks, and WebSocket streaming.
+
+---
+
 ## 🌟 The Core Paradigm: Software 3.0 & The Autonomous Agent Loop
 
 In modern autonomous systems and self-improving AI development, code creation has transitioned across three major eras:
@@ -187,8 +193,11 @@ agentic-ai-alhsi/
 │   │   └── static/           # Single-Page Web Dashboard (Tailwind, Lucide, Chart.js)
 │   └── cli.py                # Terminal CLI with rich tables and progress logs
 ├── tests/                    # Pytest test suite (14 tests)
+├── ARCHITECTURE.md           # Deep technical architecture specification
+├── LAYMAN_GUIDE.md           # Accessible guide for non-technical users
 ├── pyproject.toml
-├── run.sh
+├── restart.sh                # Container and lifecycle management script
+├── run.sh                    # Host execution launcher
 └── README.md
 ```
 
