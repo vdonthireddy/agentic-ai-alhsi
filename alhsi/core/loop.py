@@ -262,10 +262,12 @@ class AgentLoop:
 
         self.running = True
         self.paused = False
+        self._notify_state()
+        target_total = len(self.trials) + max_trials if max_trials > 0 else 999999
 
         def _worker():
-            logger.info("Starting autonomous loop worker...")
-            while self.running and len(self.trials) < max_trials:
+            logger.info(f"Starting autonomous loop worker (current: {len(self.trials)}, target: {target_total})...")
+            while self.running and len(self.trials) < target_total:
                 while self.paused and self.running:
                     time.sleep(0.2)
 
@@ -282,7 +284,7 @@ class AgentLoop:
                     time.sleep(delay_sec)
 
             self.running = False
-            self.phase = LoopPhase.COMPLETED if len(self.trials) >= max_trials else LoopPhase.IDLE
+            self.phase = LoopPhase.IDLE
             self._notify_state()
 
         self._loop_thread = threading.Thread(target=_worker, daemon=True)

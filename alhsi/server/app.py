@@ -8,6 +8,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -23,10 +24,25 @@ from alhsi.core.loop import AgentLoop
 
 logger = logging.getLogger(__name__)
 
+# Global active loop instance
+_loop_instance: Optional[AgentLoop] = None
+_active_agent_type: str = "sim"
+_active_connections: List[WebSocket] = []
+_main_event_loop: Optional[asyncio.AbstractEventLoop] = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global _main_event_loop
+    _main_event_loop = asyncio.get_running_loop()
+    yield
+
+
 app = FastAPI(
     title="ALHSI - Agent Loop Harness Self-Improvement",
     description="Interactive demonstration of the Software 3.0 recursive self-improvement paradigm",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -36,11 +52,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Global active loop instance
-_loop_instance: Optional[AgentLoop] = None
-_active_agent_type: str = "sim"
-_active_connections: List[WebSocket] = []
 
 
 def get_agent_instance(agent_type: str, provider_model: Optional[str] = None) -> BaseAgent:
@@ -53,19 +64,24 @@ def get_agent_instance(agent_type: str, provider_model: Optional[str] = None) ->
 
 
 def broadcast_state(state: Dict[str, Any]):
-    """Broadcast state to all connected WebSockets."""
-    loop_ref = asyncio.get_event_loop() if asyncio._get_running_loop() else None
-    payload = json.dumps({"type": "state_update", "data": state})
-    disconnected = []
-    for ws in _active_connections:
+    """Broadcast state to all connected WebSockets from any thread."""
+    global _main_event_loop
+    if _main_event_loop is None or not _main_event_loop.is_running():
         try:
-            if loop_ref and loop_ref.is_running():
-                asyncio.run_coroutine_threadsafe(ws.send_text(payload), loop_ref)
+            _main_event_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
+
+    if not _active_connections or not _main_event_loop or not _main_event_loop.is_running():
+        return
+
+    payload = json.dumps({"type": "state_update", "data": state})
+    for ws in list(_active_connections):
+        try:
+            asyncio.run_coroutine_threadsafe(ws.send_text(payload), _main_event_loop)
         except Exception:
-            disconnected.append(ws)
-    for ws in disconnected:
-        if ws in _active_connections:
-            _active_connections.remove(ws)
+            if ws in _active_connections:
+                _active_connections.remove(ws)
 
 
 def get_or_create_loop(preset_id: str = "nanogpt", agent_type: str = "sim") -> AgentLoop:
@@ -122,6 +138,9 @@ def trigger_step():
 def start_loop(payload: StartPayload):
     loop = get_or_create_loop()
     loop.start_continuous(max_trials=payload.max_trials, delay_sec=payload.delay_sec)
+    state = loop.get_state()
+    state["agent_type"] = _active_agent_type
+    broadcast_state(state)
     return {"status": "started", "running": loop.running}
 
 
@@ -129,6 +148,9 @@ def start_loop(payload: StartPayload):
 def pause_loop():
     loop = get_or_create_loop()
     loop.pause()
+    state = loop.get_state()
+    state["agent_type"] = _active_agent_type
+    broadcast_state(state)
     return {"status": "paused"}
 
 
@@ -136,6 +158,9 @@ def pause_loop():
 def resume_loop():
     loop = get_or_create_loop()
     loop.resume()
+    state = loop.get_state()
+    state["agent_type"] = _active_agent_type
+    broadcast_state(state)
     return {"status": "resumed"}
 
 
@@ -143,6 +168,9 @@ def resume_loop():
 def stop_loop():
     loop = get_or_create_loop()
     loop.stop()
+    state = loop.get_state()
+    state["agent_type"] = _active_agent_type
+    broadcast_state(state)
     return {"status": "stopped"}
 
 
@@ -154,6 +182,9 @@ def reset_loop(payload: Optional[LoopConfigPayload] = None):
     agent = get_agent_instance(agent_type, payload.model_name if payload else None)
     _active_agent_type = agent_type
 
+    if _loop_instance is not None and _loop_instance.running:
+        _loop_instance.stop()
+
     if _loop_instance is None:
         _loop_instance = AgentLoop(
             preset_id=preset_id,
@@ -164,7 +195,10 @@ def reset_loop(payload: Optional[LoopConfigPayload] = None):
         _loop_instance.agent = agent
         _loop_instance.reset(new_preset_id=preset_id)
 
-    return _loop_instance.get_state()
+    state = _loop_instance.get_state()
+    state["agent_type"] = _active_agent_type
+    broadcast_state(state)
+    return state
 
 
 class CustomTrialPayload(BaseModel):

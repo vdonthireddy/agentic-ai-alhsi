@@ -494,39 +494,78 @@ async function fetchState() {
   }
 }
 
+// Periodic State Polling (Ensures UI updates even if WS is interrupted or blocked)
+setInterval(async () => {
+  if (currentState && currentState.running) {
+    await fetchState();
+  }
+}, 1000);
+
 // Event Listeners for Loop Controls
 btnStep.addEventListener("click", async () => {
   btnStep.disabled = true;
+  const originalHtml = btnStep.innerHTML;
+  btnStep.innerHTML = "<span>Running...</span>";
   try {
-    await fetch("/api/step", { method: "POST" });
+    const res = await fetch("/api/step", { method: "POST" });
+    if (!res.ok) {
+      const err = await res.json();
+      console.warn("Step request:", err.detail);
+    }
+    await fetchState();
   } catch (e) {
-    console.error(e);
+    console.error("Step execution error:", e);
   } finally {
     btnStep.disabled = false;
+    btnStep.innerHTML = originalHtml;
+    if (window.lucide) lucide.createIcons();
   }
 });
 
 btnStart.addEventListener("click", async () => {
   const delay = parseFloat(selectDelay.value) || 1.0;
-  await fetch("/api/start", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ max_trials: 30, delay_sec: delay }),
-  });
+  btnStart.classList.add("hidden");
+  btnPause.classList.remove("hidden");
+  phaseStatusText.textContent = "Phase: STARTING...";
+  try {
+    await fetch("/api/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ max_trials: 30, delay_sec: delay }),
+    });
+    await fetchState();
+  } catch (err) {
+    console.error("Failed to start loop:", err);
+  }
 });
 
 btnPause.addEventListener("click", async () => {
-  await fetch("/api/pause", { method: "POST" });
+  btnPause.classList.add("hidden");
+  btnStart.classList.remove("hidden");
+  try {
+    await fetch("/api/pause", { method: "POST" });
+    await fetchState();
+  } catch (err) {
+    console.error("Failed to pause loop:", err);
+  }
 });
 
 btnReset.addEventListener("click", async () => {
+  btnReset.disabled = true;
   const presetId = selectPreset.value;
   const agentType = selectAgent.value;
-  await fetch("/api/reset", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ preset_id: presetId, agent_type: agentType }),
-  });
+  try {
+    await fetch("/api/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ preset_id: presetId, agent_type: agentType }),
+    });
+    await fetchState();
+  } catch (err) {
+    console.error("Failed to reset:", err);
+  } finally {
+    btnReset.disabled = false;
+  }
 });
 
 selectPreset.addEventListener("change", async () => {
@@ -535,6 +574,7 @@ selectPreset.addEventListener("change", async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ preset_id: selectPreset.value, agent_type: selectAgent.value }),
   });
+  await fetchState();
 });
 
 selectAgent.addEventListener("change", async () => {
@@ -543,6 +583,7 @@ selectAgent.addEventListener("change", async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ preset_id: selectPreset.value, agent_type: selectAgent.value }),
   });
+  await fetchState();
 });
 
 // Manual Human Sandbox Execution (Software 1.0 vs 3.0)
@@ -562,6 +603,7 @@ btnRunManual.addEventListener("click", async () => {
       }),
     });
     const trial = await res.json();
+    await fetchState();
     openTrialModal(trial);
   } catch (e) {
     console.error("Error executing manual trial:", e);
@@ -580,11 +622,13 @@ btnQuickCheat.addEventListener("click", async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ preset_id: selectPreset.value, agent_type: "cheat" }),
   });
+  await fetchState();
   setTimeout(async () => {
     const res = await fetch("/api/step", { method: "POST" });
     const trial = await res.json();
+    await fetchState();
     openTrialModal(trial);
-  }, 300);
+  }, 200);
 });
 
 // Attack Simulator Lab Launchers
@@ -600,6 +644,7 @@ document.querySelectorAll(".btn-launch-attack").forEach((btn) => {
         body: JSON.stringify({ attack_type: attackType }),
       });
       const trial = await res.json();
+      await fetchState();
       securityFeedback.classList.remove("hidden");
       securityFeedback.innerHTML = `
         <div class="text-rose-400 font-bold">⚠️ ATTACK INTERCEPTED BY HARNESS</div>
