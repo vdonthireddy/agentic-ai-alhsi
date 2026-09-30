@@ -14,7 +14,7 @@ sequenceDiagram
     participant DOM as 🖥️ Browser DOM (index.html)
     participant JS as ⚡ Client Script (app.js)
     participant API as 🌐 FastAPI Server (app.py)
-    participant Loop as 🔄 Loop Engine (loop.py)
+    participant Engine as 🔄 Loop Engine (loop.py)
     participant Agent as 🧠 Cognitive Agent (auto_sim / llm)
     participant Harness as 🛡️ Verification Harness (harness.py)
     participant Git as 📦 Git Engine (git_manager.py)
@@ -24,29 +24,29 @@ sequenceDiagram
     DOM->>JS: Dispatches click event listener
     JS->>DOM: Optimistic UI update (status: STARTING, buttons toggle)
     JS->>API: HTTP POST /api/start or /api/step
-    API->>Loop: start_continuous() or step()
+    API->>Engine: start_continuous() or step()
     
     rect rgb(20, 30, 50)
-        note over Loop,Harness: The 5-Phase Autonomous Research Cycle
-        Loop->>Agent: Phase 1: propose_change(history, current_code)
-        Agent-->>Loop: Hypothesis + Candidate Mutated Code
-        Loop->>Loop: Phase 2: Overwrite target_file (e.g. train.py)
-        Loop->>Git: Compute unified text diff (lines added/removed)
-        Loop->>Harness: Phase 3: execute_eval(eval_script)
+        note over Engine,Harness: The 5-Phase Autonomous Research Cycle
+        Engine->>Agent: Phase 1: propose_change(history, current_code)
+        Agent-->>Engine: Hypothesis + Candidate Mutated Code
+        Engine->>Engine: Phase 2: Overwrite target_file (e.g. train.py)
+        Engine->>Git: Compute unified text diff (lines added/removed)
+        Engine->>Harness: Phase 3: execute_eval(eval_script)
         Harness->>Harness: Compute SHA-256 pre-execution checksums
         Harness->>Harness: Spawn isolated subprocess (PYTHONDONTWRITEBYTECODE=1)
         Harness->>Harness: Verify post-execution hashes & parse __ALHSI_RESULT__
-        Harness-->>Loop: BenchmarkResult (metric, secondary_metrics, logs)
-        Loop->>Loop: Phase 4: Compare trial_metric vs golden baseline
+        Harness-->>Engine: BenchmarkResult (metric, secondary_metrics, logs)
+        Engine->>Engine: Phase 4: Compare trial_metric vs golden baseline
         alt Metric Improved (Accepted)
-            Loop->>Git: Phase 5a: git add & git commit -m "[Trial #N] ..."
-            Loop->>Loop: Update baseline_metric & golden baseline_code
+            Engine->>Git: Phase 5a: git add & git commit -m "[Trial #N] ..."
+            Engine->>Engine: Update baseline_metric & golden baseline_code
         else Metric Regressed / Crashed / Tampered (Rejected)
-            Loop->>Git: Phase 5b: git checkout -- target_file & git clean -fd
+            Engine->>Git: Phase 5b: git checkout -- target_file & git clean -fd
         end
     end
 
-    Loop->>API: _notify_state() triggered
+    Engine->>API: _notify_state() triggered
     API->>WS: broadcast_state() via asyncio event loop
     WS->>JS: Push JSON payload: {"type": "state_update", "data": state}
     JS->>DOM: Redraw Chart.js curve, render Lab Notebook row, update diff viewer

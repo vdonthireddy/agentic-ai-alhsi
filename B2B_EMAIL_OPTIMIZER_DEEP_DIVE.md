@@ -266,7 +266,7 @@ sequenceDiagram
     actor User as User / Operator
     participant UI as Web Dashboard
     participant API as FastAPI Server
-    participant Loop as AgentLoop (loop.py)
+    participant Engine as AgentLoop Engine (loop.py)
     participant Agent as Autonomous Simulator
     participant File as campaign_strategy.py
     participant Harness as Harness (harness.py)
@@ -276,49 +276,49 @@ sequenceDiagram
 
     User->>UI: Clicks "Step" Button
     UI->>API: POST /api/step
-    API->>Loop: loop.step()
+    API->>Engine: Run step()
     
     rect rgb(30, 41, 59)
-        Note over Loop,Agent: Phase 1: Hypothesize
-        Loop->>WS: Broadcast Phase: HYPOTHESIZING
+        Note over Engine,Agent: Phase 1: Hypothesize
+        Engine->>WS: Broadcast Phase: HYPOTHESIZING
         WS-->>UI: Pulse Hypothesize Node (Blue)
-        Loop->>Agent: propose_hypothesis(baseline_code, trial_history)
-        Agent-->>Loop: Hypothesis("Inject Quantifiable Impact Metric (45% MTTR Reduction)")
+        Engine->>Agent: propose_hypothesis(baseline_code, trial_history)
+        Agent-->>Engine: Hypothesis("Inject Quantifiable Impact Metric (45% MTTR Reduction)")
     end
 
     rect rgb(15, 23, 42)
-        Note over Loop,File: Phase 2: Mutate Code
-        Loop->>WS: Broadcast Phase: MUTATING
+        Note over Engine,File: Phase 2: Mutate Code
+        Engine->>WS: Broadcast Phase: MUTATING
         WS-->>UI: Pulse Mutate Node (Indigo)
-        Loop->>File: Write candidate code (INCLUDE_METRIC_PROOF = True)
+        Engine->>File: Write candidate code (INCLUDE_METRIC_PROOF = True)
     end
 
     rect rgb(30, 27, 75)
-        Note over Loop,Subproc: Phase 3: Evaluate in Sandbox
-        Loop->>WS: Broadcast Phase: EVALUATING
+        Note over Engine,Subproc: Phase 3: Evaluate in Sandbox
+        Engine->>WS: Broadcast Phase: EVALUATING
         WS-->>UI: Pulse Evaluate Node (Amber)
-        Loop->>Harness: run_benchmark(target_file="campaign_strategy.py")
+        Engine->>Harness: run_benchmark(target_file="campaign_strategy.py")
         Harness->>Harness: Compute SHA-256 hashes of eval_harness.py, etc.
         Harness->>Subproc: Popen("python3 eval_harness.py", env={PYTHONDONTWRITEBYTECODE: 1})
         Subproc->>Subproc: Simulate across 500 execs (open=46.0%, reply=3.4%, booking=3.22%)
         Subproc-->>Harness: __ALHSI_RESULT__ {"booking_rate": 3.22, "spam_rate": 0.06}
         Harness->>Harness: Re-verify SHA-256 hashes (Bitwise diff match!)
-        Harness-->>Loop: BenchmarkResult(metric=3.22, success=True, tamper=False)
+        Harness-->>Engine: BenchmarkResult(metric=3.22, success=True, tamper=False)
     end
 
     rect rgb(20, 83, 45)
-        Note over Loop,Git: Phase 4 & 5: Decide & Commit
-        Loop->>WS: Broadcast Phase: DECIDING
+        Note over Engine,Git: Phase 4 & 5: Decide & Commit
+        Engine->>WS: Broadcast Phase: DECIDING
         WS-->>UI: Pulse Decide Node (Purple)
-        Loop->>Loop: 3.22% > 1.52% baseline? YES! (+1.70% improvement)
-        Loop->>WS: Broadcast Phase: COMMITTING
+        Engine->>Engine: 3.22% > 1.52% baseline? YES! (+1.70% improvement)
+        Engine->>WS: Broadcast Phase: COMMITTING
         WS-->>UI: Pulse Commit Node (Green)
-        Loop->>Git: commit_improvement(trial_num=3, new_val=3.22)
-        Git-->>Loop: Commit SHA: "a49e2bc"
-        Loop->>Loop: Update Golden Baseline = 3.22%
+        Engine->>Git: commit_improvement(trial_num=3, new_val=3.22)
+        Git-->>Engine: Commit SHA: "a49e2bc"
+        Engine->>Engine: Update Golden Baseline = 3.22%
     end
 
-    Loop->>WS: Push Updated Loop State (Trial #3 ACCEPTED, commits, diffs)
+    Engine->>WS: Push Updated Loop State (Trial #3 ACCEPTED, commits, diffs)
     WS-->>UI: State Update Broadcast
     UI->>UI: Plot green dot on Chart.js, insert row in Lab Notebook
     API-->>UI: Return HTTP 200 OK
