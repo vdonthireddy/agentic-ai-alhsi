@@ -23,10 +23,10 @@ Before exploring the subsystem layers, here is the simplified conceptual model o
 
 ```mermaid
 flowchart LR
-    Agent["🧠 1. Cognitive Brain\n(Autonomous Agent)\nProposes hypotheses &\nmutates candidate code"]
-    Target["📝 2. Target Workspace\n(e.g., train.py / kernel.py)\nReceives code edits inside\nsandboxed repository"]
-    Harness["⚖️ 3. Immutable Harness\n(eval_harness.py)\nRuns sandbox benchmark &\nenforces zero-tamper rules"]
-    GitUI["💾 4. Ledger & Dashboard\n(Git Engine + Web UI)\nCommits improvements &\nrolls back regressions"]
+    Agent["🧠 1. Cognitive Brain<br/>(Autonomous Agent)<br/>Proposes hypotheses &<br/>mutates candidate code"]
+    Target["📝 2. Target Workspace<br/>(e.g., train.py / kernel.py)<br/>Receives code edits inside<br/>sandboxed repository"]
+    Harness["⚖️ 3. Immutable Harness<br/>(eval_harness.py)<br/>Runs sandbox benchmark &<br/>enforces zero-tamper rules"]
+    GitUI["💾 4. Ledger & Dashboard<br/>(Git Engine + Web UI)<br/>Commits improvements &<br/>rolls back regressions"]
 
     Agent -->|Mutates Code| Target
     Target -->|Evaluates In Sandbox| Harness

@@ -49,10 +49,10 @@ If you want to understand how the entire system works in 10 seconds without gett
 
 ```mermaid
 flowchart LR
-    Brain["🧠 1. The Brain\n(Autonomous Agent)\nProposes hypotheses &\nmutates strategy copy"]
-    Target["📝 2. Target Script\n(campaign_strategy.py)\nGenerates cold emails for\n500 buyer personas"]
-    Harness["⚖️ 3. The Referee\n(Immutable Harness)\nMeasures booking rate &\nblocks spam clickbait"]
-    Recorder["💾 4. The Recorder\n(Git Engine + Web UI)\nCommits improvements &\nrolls back regressions"]
+    Brain["🧠 1. The Brain<br/>(Autonomous Agent)<br/>Proposes hypotheses &<br/>mutates strategy copy"]
+    Target["📝 2. Target Script<br/>(campaign_strategy.py)<br/>Generates cold emails for<br/>500 buyer personas"]
+    Harness["⚖️ 3. The Referee<br/>(Immutable Harness)<br/>Measures booking rate &<br/>blocks spam clickbait"]
+    Recorder["💾 4. The Recorder<br/>(Git Engine + Web UI)<br/>Commits improvements &<br/>rolls back regressions"]
 
     Brain -->|Writes Code| Target
     Target -->|Evaluates| Harness
