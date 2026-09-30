@@ -16,7 +16,27 @@
 
 ---
 
-## 2. High-Level Architecture Diagram
+## 2. System Architecture
+
+### 2.1 Simplified Architecture (The "Core 4-Box" Model)
+Before exploring the subsystem layers, here is the simplified conceptual model of how the system operates:
+
+```mermaid
+flowchart LR
+    Agent["🧠 1. Cognitive Brain\n(Autonomous Agent)\nProposes hypotheses &\nmutates candidate code"]
+    Target["📝 2. Target Workspace\n(e.g., train.py / kernel.py)\nReceives code edits inside\nsandboxed repository"]
+    Harness["⚖️ 3. Immutable Harness\n(eval_harness.py)\nRuns sandbox benchmark &\nenforces zero-tamper rules"]
+    GitUI["💾 4. Ledger & Dashboard\n(Git Engine + Web UI)\nCommits improvements &\nrolls back regressions"]
+
+    Agent -->|Mutates Code| Target
+    Target -->|Evaluates In Sandbox| Harness
+    Harness -->|Verification Decision| GitUI
+    GitUI -.->|History & Telemetry Feedback| Agent
+```
+
+---
+
+### 2.2 Detailed High-Level Architecture Diagram (HLSA)
 
 ```mermaid
 flowchart TD

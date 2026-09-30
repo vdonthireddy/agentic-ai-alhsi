@@ -42,7 +42,33 @@ In the **Software 3.0 paradigm**, humans do **not** write or guess copy.
 
 ---
 
-## 2. High-Level System Architecture (HLSA)
+## 2. System Architecture: From Simple Mental Model to Detailed HLSA
+
+### 2.1 The "Core 4-Box" Mental Model (Simplified Architecture)
+If you want to understand how the entire system works in 10 seconds without getting overwhelmed by server sockets and subprocess pipes, look at these 4 simple blocks:
+
+```mermaid
+flowchart LR
+    Brain["🧠 1. The Brain\n(Autonomous Agent)\nProposes hypotheses &\nmutates strategy copy"]
+    Target["📝 2. Target Script\n(campaign_strategy.py)\nGenerates cold emails for\n500 buyer personas"]
+    Harness["⚖️ 3. The Referee\n(Immutable Harness)\nMeasures booking rate &\nblocks spam clickbait"]
+    Recorder["💾 4. The Recorder\n(Git Engine + Web UI)\nCommits improvements &\nrolls back regressions"]
+
+    Brain -->|Writes Code| Target
+    Target -->|Evaluates| Harness
+    Harness -->|Decides Winner / Loser| Recorder
+    Recorder -.->|Feedback History| Brain
+```
+
+#### Why These 4 Blocks Matter:
+1. **The Brain (Agent)**: It doesn't write emails to prospects directly. It edits the **Python script** that generates emails.
+2. **The Target (`campaign_strategy.py`)**: The playground where the agent experiments with word count, value props, and call-to-actions.
+3. **The Referee (`eval_harness.py`)**: The unbribable grader. It runs the script against 500 synthetic enterprise executives and computes the qualified demo booking rate.
+4. **The Recorder (Git & UI)**: If the booking rate goes up, Git commits it as the new golden standard. If it drops or crashes, Git instantly rolls it back (`git checkout`). The live dashboard renders the update in real time.
+
+---
+
+### 2.2 Detailed High-Level System Architecture (HLSA)
 
 The application is structured into decoupled, modular layers designed for high concurrency, process safety, and real-time observability.
 
