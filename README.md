@@ -7,6 +7,7 @@
 
 ### 📖 Documentation Quicklinks
 - 🚀 [**User Guide (`USER_GUIDE.md`)**](USER_GUIDE.md): Complete step-by-step walkthrough covering the Web UI, running loops, the code sandbox, security attacks, and the CLI.
+- 📧 [**B2B Email Optimizer Deep Dive (`B2B_EMAIL_OPTIMIZER_DEEP_DIVE.md`)**](B2B_EMAIL_OPTIMIZER_DEEP_DIVE.md): Comprehensive masterclass on the real-world B2B cold outbound campaign optimizer example, complete with HLSA, sequence diagrams, and mathematical models.
 - 🔍 [**Button Click Lifecycle Guide (`BUTTON_CLICK_LIFECYCLE.md`)**](BUTTON_CLICK_LIFECYCLE.md): Deep-dive into what exactly happens behind the scenes from the DOM click event to the Git commit.
 - 📘 [**Layman's Guide (`LAYMAN_GUIDE.md`)**](LAYMAN_GUIDE.md): Simple, everyday guide explaining the kitchen metaphor, why the harness prevents cheating, and how to use the dashboard without technical jargon.
 - 📐 [**Technical Architecture (`ARCHITECTURE.md`)**](ARCHITECTURE.md): Full engineering specification covering the state machine, SHA-256 anti-tampering, subprocess sandboxing, git rollbacks, and WebSocket streaming.
