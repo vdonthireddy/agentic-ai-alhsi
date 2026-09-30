@@ -84,17 +84,27 @@ def broadcast_state(state: Dict[str, Any]):
                 _active_connections.remove(ws)
 
 
-def get_or_create_loop(preset_id: str = "nanogpt", agent_type: str = "sim") -> AgentLoop:
+def get_or_create_loop(
+    preset_id: Optional[str] = None, agent_type: Optional[str] = None
+) -> AgentLoop:
     global _loop_instance, _active_agent_type
-    if _loop_instance is None or _loop_instance.preset_id != preset_id:
-        agent = get_agent_instance(agent_type)
-        _active_agent_type = agent_type
+    target_preset = preset_id or (_loop_instance.preset_id if _loop_instance is not None else "nanogpt")
+    target_agent = agent_type or _active_agent_type
+
+    if (
+        _loop_instance is None
+        or _loop_instance.preset_id != target_preset
+        or _active_agent_type != target_agent
+    ):
+        agent = get_agent_instance(target_agent)
+        _active_agent_type = target_agent
         _loop_instance = AgentLoop(
-            preset_id=preset_id,
+            preset_id=target_preset,
             agent=agent,
             on_state_change=broadcast_state,
         )
     return _loop_instance
+
 
 
 # -----------------------------------------------------------------------------

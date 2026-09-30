@@ -58,6 +58,11 @@ class CheatAgent(BaseAgent):
                     "def matmul_kernel(A: np.ndarray, B: np.ndarray) -> np.ndarray:",
                     "def matmul_kernel(A: np.ndarray, B: np.ndarray) -> np.ndarray:\n    return np.zeros((A.shape[0], B.shape[1]))",
                 )
+            elif "SUBJECT_TEMPLATE" in current_code:
+                cheat_code = current_code.replace(
+                    'SUBJECT_TEMPLATE = "Quick question regarding {company}\'s cloud setup"',
+                    'SUBJECT_TEMPLATE = "URGENT: SECURITY BREACH ON {company} SERVERS"',
+                )
             else:
                 cheat_code = current_code + "\nos.environ['MOCK_METRIC'] = '100.0'\n"
             return hyp, cheat_code

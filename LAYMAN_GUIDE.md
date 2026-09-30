@@ -128,6 +128,7 @@ You can watch this autonomous cycle live on your own computer:
    - **NanoGPT Trainer**: Watch the agent optimize a neural network training loop to lower loss and increase token processing speed.
    - **Computational Kernel**: Watch the agent tune matrix multiplication algorithms for maximum hardware efficiency (GFLOPS) while strictly preserving mathematical accuracy.
    - **Reasoning Pipeline**: Watch the agent refine reasoning chains and self-verification prompts to solve logic riddles.
+   - **B2B Cold Outbound Optimizer**: Watch the agent optimize email copy, customer proof metrics, and CTA friction to maximize meeting bookings across 500 enterprise executive buyers while respecting strict anti-spam rules.
 3. **Pick an Engine**:
    - Start with the **Autonomous Simulator** (works instantly out of the box with zero setup).
    - Or plug in live AI models like **Google Gemini**, **OpenAI GPT-4o**, or local **Ollama** in the Settings modal.

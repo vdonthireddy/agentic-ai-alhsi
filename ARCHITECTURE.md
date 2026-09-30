@@ -204,6 +204,7 @@ class BaseAgent(ABC):
 | **NanoGPT** | `train.py` | `eval_harness.py` | `val_loss` (Lower is better) | Optimize micro-transformer training loop, attention scaling, AdamW hyperparams, learning rate schedules, and token throughput. |
 | **Matmul** | `kernel.py` | `eval_harness.py` | `gflops` (Higher is better) | Maximize computational throughput via loop unrolling, block tiling, and cache locality while mathematically verifying matrix output against NumPy ground truth. |
 | **Reasoning** | `prompt_solver.py` | `eval_harness.py` | `accuracy` (Higher is better) | Refine multi-step puzzle reasoning prompts, chain-of-thought heuristics, and self-consistency checking against a locked puzzle test suite. |
+| **Outbound Email** | `campaign_strategy.py` | `eval_harness.py` | `booking_rate` (Higher is better) | Optimize cold outbound strategy (subject formulas, brevity, ROI proof, low-friction CTA) across 500 synthetic enterprise executives while enforcing strict anti-spam deliverability bounds (<0.40% spam complaint rate). |
 
 ---
 

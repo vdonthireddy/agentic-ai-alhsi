@@ -82,10 +82,35 @@ class ReasoningBenchmark(BaseBenchmark):
         return "eval_harness.py"
 
 
+class OutboundEmailBenchmark(BaseBenchmark):
+    def get_config(self) -> PresetConfig:
+        return PresetConfig(
+            id="outbound_email",
+            name="B2B Outbound Email Campaign Optimizer",
+            description="Optimize cold outbound strategy (subject lines, brevity, ROI proof, CTA friction) across 500 synthetic enterprise executives.",
+            research_context="Autonomous B2B marketing loop: discovering optimal email copy and sequence cadence that maximizes demo booking rate while enforcing strict anti-spam deliverability guards.",
+            target_file="campaign_strategy.py",
+            metric_name="booking_rate",
+            unit="%",
+            lower_is_better=False,
+            baseline_metric=1.10,
+            category="B2B Marketing / Sales",
+        )
+
+    def setup_workspace(self, workspace_path: Path) -> None:
+        src_dir = Path(__file__).parent / "outbound_email"
+        shutil.copy2(src_dir / "campaign_strategy.py", workspace_path / "campaign_strategy.py")
+        shutil.copy2(src_dir / "eval_harness.py", workspace_path / "eval_harness.py")
+
+    def get_eval_script(self) -> str:
+        return "eval_harness.py"
+
+
 BENCHMARK_REGISTRY: Dict[str, Type[BaseBenchmark]] = {
     "nanogpt": NanoGPTBenchmark,
     "matmul": MatmulBenchmark,
     "reasoning": ReasoningBenchmark,
+    "outbound_email": OutboundEmailBenchmark,
 }
 
 

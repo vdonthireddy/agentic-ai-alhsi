@@ -35,3 +35,21 @@ def test_loop_catches_cheater_agent(tmp_path: Path):
     assert trial.status == TrialStatus.TAMPER_DETECTED
     assert trial.commit_hash is None
     assert "Security Violation" in str(trial.rejection_reason)
+
+
+def test_loop_execution_outbound_email(tmp_path: Path):
+    loop = AgentLoop(
+        preset_id="outbound_email",
+        agent=AutoSimAgent(),
+        workspace_base=tmp_path,
+    )
+    assert loop.baseline_metric > 0.0
+
+    trial = loop.step()
+    assert trial.trial_num == 1
+    assert trial.status in (TrialStatus.ACCEPTED, TrialStatus.REJECTED)
+    assert trial.diff != ""
+
+    state = loop.get_state()
+    assert state["total_trials"] == 1
+    assert state["preset"]["id"] == "outbound_email"

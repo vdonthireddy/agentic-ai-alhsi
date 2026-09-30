@@ -35,6 +35,8 @@ class AutoSimAgent(BaseAgent):
             return self._propose_matmul(current_code, history, trial_num)
         elif config.id == "reasoning":
             return self._propose_reasoning(current_code, history, trial_num)
+        elif config.id == "outbound_email":
+            return self._propose_outbound_email(current_code, history, trial_num)
         else:
             return self._propose_generic(current_code, history, trial_num)
 
@@ -288,6 +290,120 @@ class AutoSimAgent(BaseAgent):
                 'PROMPT_STRATEGY = "chain_of_thought"',
                 'PROMPT_STRATEGY = "self_consistency"',
             )
+            return hyp, new_code
+
+    # -------------------------------------------------------------------------
+    # B2B Cold Outbound Email Campaign Optimization
+    # -------------------------------------------------------------------------
+    def _propose_outbound_email(
+        self, current_code: str, history: List[Trial], trial_num: int
+    ) -> Tuple[Hypothesis, str]:
+        step = (trial_num - 1) % 8
+
+        if step == 0:
+            hyp = Hypothesis(
+                title="Strip Introductory Fluff to Reduce Word Count & Mobile Friction",
+                category="copy_length",
+                description="Remove generic pleasantry ('I hope this note finds you well...') to drop executive reading time under 45 seconds.",
+                expected_impact="Lowers executive cognitive load and increases read-through rate.",
+            )
+            new_code = current_code.replace(
+                "INCLUDE_INTRO_PLEASANTRY = True", "INCLUDE_INTRO_PLEASANTRY = False"
+            )
+            return hyp, new_code
+
+        elif step == 1:
+            hyp = Hypothesis(
+                title="Pivot Value Prop from Feature Catalog to Cloud Cost Reduction",
+                category="value_proposition",
+                description="Technology leaders prioritize trimming cloud waste and infrastructure spend over a laundry list of observability features.",
+                expected_impact="Aligns message with C-suite and VP budget priorities to boost response rate.",
+            )
+            new_code = current_code.replace(
+                'VALUE_PROP_FOCUS = "feature_dump"',
+                'VALUE_PROP_FOCUS = "roi_cost_reduction"',
+            )
+            return hyp, new_code
+
+        elif step == 2:
+            hyp = Hypothesis(
+                title="Inject Quantifiable Customer Impact Metric (45% MTTR Reduction)",
+                category="social_proof",
+                description="Add specific verifiable customer outcome ('reduced incident MTTR by 45% in 2 weeks') to establish instant credibility.",
+                expected_impact="Provides concrete evidence to skeptical engineering decision-makers.",
+            )
+            new_code = current_code.replace(
+                "INCLUDE_METRIC_PROOF = False", "INCLUDE_METRIC_PROOF = True"
+            )
+            return hyp, new_code
+
+        elif step == 3:
+            hyp = Hypothesis(
+                title="Transition High-Friction Meeting Ask to Low-Pressure Interest Gauge",
+                category="call_to_action",
+                description="Asking an executive for 45 minutes on Thursday creates high friction. Replace with a low-pressure interest question.",
+                expected_impact="Reduces response barrier and dramatically improves demo conversion.",
+            )
+            new_code = current_code.replace(
+                'CTA_STYLE = "hard_meeting_request"',
+                'CTA_STYLE = "soft_interest_gauge"',
+            ).replace(
+                'CTA_TEXT = "Are you available for a 45-minute live demo this Thursday at 2 PM?"',
+                'CTA_TEXT = "Open to seeing how they accomplished this?"',
+            )
+            return hyp, new_code
+
+        elif step == 4:
+            hyp = Hypothesis(
+                title="Refactor Subject Line to Customer Peer Social Proof",
+                category="subject_line",
+                description="Replace generic 'Quick question' with industry peer proof ('How CloudScale trimmed cloud infra costs 30%').",
+                expected_impact="Stands out in executive inboxes and raises open rates above 60%.",
+            )
+            new_code = current_code.replace(
+                'SUBJECT_STYLE = "generic_question"',
+                'SUBJECT_STYLE = "peer_proof"',
+            ).replace(
+                'SUBJECT_TEMPLATE = "Quick question regarding {company}\'s cloud setup"',
+                'SUBJECT_TEMPLATE = "How CloudScale trimmed cloud infra costs 30%"',
+            )
+            return hyp, new_code
+
+        elif step == 5:
+            # Deliberate regression / bad idea to test harness rejection
+            hyp = Hypothesis(
+                title="Aggressive Daily Outreach Spacing (Fatigue Test)",
+                category="cadence",
+                description="Increase email frequency to 7 touches spaced 1 day apart to force prospect engagement.",
+                expected_impact="Attempts to brute-force reply volume via high frequency.",
+            )
+            new_code = current_code.replace(
+                "TOUCHES_COUNT = 2", "TOUCHES_COUNT = 7"
+            ).replace("TOUCH_INTERVAL_DAYS = 5", "TOUCH_INTERVAL_DAYS = 1")
+            return hyp, new_code
+
+        elif step == 6:
+            hyp = Hypothesis(
+                title="Cite Recognized Peer Customers in Similar Vertical",
+                category="social_proof",
+                description="Explicitly reference well-known engineering organizations (CloudScale, DataFlow, FinCore) to establish brand trust.",
+                expected_impact="Overcomes brand obscurity objection among risk-averse tech leaders.",
+            )
+            new_code = current_code.replace(
+                "INCLUDE_PEER_LOGO = False", "INCLUDE_PEER_LOGO = True"
+            )
+            return hyp, new_code
+
+        else:
+            hyp = Hypothesis(
+                title="Tune Multi-Touch Follow-up Sequence to 3 Touches Spaced 4 Days",
+                category="cadence",
+                description="Optimal persistence: 3 total touchpoints spaced 4 days apart balances follow-up reminders with respect for executive inboxes.",
+                expected_impact="Captures second-wave replies without triggering unsubscribe fatigue.",
+            )
+            new_code = current_code.replace(
+                "TOUCHES_COUNT = 2", "TOUCHES_COUNT = 3"
+            ).replace("TOUCH_INTERVAL_DAYS = 5", "TOUCH_INTERVAL_DAYS = 4")
             return hyp, new_code
 
     # -------------------------------------------------------------------------

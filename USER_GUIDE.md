@@ -189,6 +189,9 @@ python3 -m alhsi run --preset matmul --trials 10
 
 # Run reasoning puzzle optimization
 python3 -m alhsi run --preset reasoning --trials 5
+
+# Run B2B outbound email campaign optimization
+python3 -m alhsi run --preset outbound_email --trials 6
 ```
 
 ### Test Adversarial Defense via CLI
@@ -201,7 +204,7 @@ python3 -m alhsi run --preset nanogpt --agent cheat --trials 3
 
 | Argument | Description | Default |
 | :--- | :--- | :--- |
-| `--preset` | Benchmark suite (`nanogpt`, `matmul`, `reasoning`) | `nanogpt` |
+| `--preset` | Benchmark suite (`nanogpt`, `matmul`, `reasoning`, `outbound_email`) | `nanogpt` |
 | `--agent` | Cognitive engine (`sim`, `gemini`, `openai`, `ollama`, `cheat`) | `sim` |
 | `--trials` | Maximum number of trials to run | `10` |
 | `--delay` | Artificial pause between trials in seconds | `0.5` |

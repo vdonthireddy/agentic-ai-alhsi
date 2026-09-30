@@ -93,6 +93,7 @@ In recursive self-improvement demonstrations, an autonomous agent is pointed at 
   1. `nanogpt`: GPT-2 micro-transformer training scenario (optimizing `val_loss`, tokens/sec, attention scaling, cosine schedules).
   2. `matmul`: Computational kernel throughput (optimizing `gflops` and latency while enforcing mathematical matrix correctness).
   3. `reasoning`: Cognitive agent prompt & chain-of-thought optimizer against a locked puzzle test suite.
+  4. `outbound_email`: B2B cold outbound email campaign optimizer (optimizing demo booking rate across 500 enterprise executive personas while enforcing strict deliverability guards).
 - **Multiple Cognitive Engines**:
   - **Autonomous Simulator** (instant, zero-config, out-of-the-box).
   - **Live LLM Agents** (Google Gemini, OpenAI GPT-4o, Local Ollama).
@@ -153,6 +154,9 @@ python3 -m alhsi run --preset nanogpt --trials 8 --delay 0.5
 # Run kernel throughput benchmark
 python3 -m alhsi run --preset matmul --trials 6
 
+# Run B2B outbound email optimizer
+python3 -m alhsi run --preset outbound_email --trials 5
+
 # Test the Adversarial Cheater agent against the Harness
 python3 -m alhsi run --preset nanogpt --agent cheat --trials 3
 ```
@@ -167,7 +171,7 @@ Run the complete test suite:
 pytest -v
 ```
 
-All 14 tests cover types, git manager commit/revert mechanics, harness anti-tampering verification, subprocess execution, the autonomous loop orchestrator, and FastAPI API routes.
+All 15 tests cover types, git manager commit/revert mechanics, harness anti-tampering verification, subprocess execution, the autonomous loop orchestrator, and FastAPI API routes.
 
 ---
 
@@ -189,12 +193,13 @@ agentic-ai-alhsi/
 │   ├── benchmarks/
 │   │   ├── nanogpt/          # NanoGPT / train.py benchmark
 │   │   ├── matmul/           # Matrix multiplication / attention kernel GFLOPS benchmark
-│   │   └── reasoning/        # Prompt & chain-of-thought puzzle solver benchmark
+│   │   ├── reasoning/        # Prompt & chain-of-thought puzzle solver benchmark
+│   │   └── outbound_email/   # B2B cold outbound email campaign optimizer
 │   ├── server/
 │   │   ├── app.py            # FastAPI REST & WebSocket streaming server
 │   │   └── static/           # Single-Page Web Dashboard (Tailwind, Lucide, Chart.js)
 │   └── cli.py                # Terminal CLI with rich tables and progress logs
-├── tests/                    # Pytest test suite (14 tests)
+├── tests/                    # Pytest test suite (15 tests)
 ├── USER_GUIDE.md             # Complete step-by-step user guide
 ├── BUTTON_CLICK_LIFECYCLE.md # Deep-dive into button click execution pipeline
 ├── ARCHITECTURE.md           # Deep technical architecture specification
