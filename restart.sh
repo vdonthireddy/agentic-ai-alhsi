@@ -42,13 +42,10 @@ echo "================================================================="
 # ------------------------------------------------------------------------------
 echo "[-] Checking for running instances on port ${PORT}..."
 
-# Stop running docker container if present
+# Stop and remove existing docker container if present (running, stopped, or created)
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-  if docker ps -q --filter "name=alhsi-app" | grep -q .; then
-    echo "[-] Stopping existing Docker container 'alhsi-app'..."
-    docker stop alhsi-app >/dev/null 2>&1 || true
-    docker rm alhsi-app >/dev/null 2>&1 || true
-  fi
+  echo "[-] Cleaning up any existing Docker container 'alhsi-app'..."
+  docker rm -f alhsi-app >/dev/null 2>&1 || true
 fi
 
 # Stop any local process occupying port 8000
@@ -99,6 +96,7 @@ echo "[+] Building Docker image (alhsi:latest)..."
 docker build -t alhsi:latest .
 
 echo "[+] Launching container 'alhsi-app' on port ${PORT}..."
+docker rm -f alhsi-app >/dev/null 2>&1 || true
 docker run -d \
   --name alhsi-app \
   -p ${PORT}:${PORT} \
