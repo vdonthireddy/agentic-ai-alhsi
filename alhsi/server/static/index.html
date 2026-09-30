@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALHSI - Agent Loop Harness Self-Improvement</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40 px-6 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <i data-lucide="repeat" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-bold tracking-tight text-white">ALHSI</h1>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded bg-blue-900/60 text-blue-300 border border-blue-700/50">Autonomous Loop</span>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded bg-emerald-900/60 text-emerald-300 border border-emerald-700/50">Software 3.0</span>
+          </div>
+          <p class="text-xs text-slate-400">Agent-Loop-Harness Autonomous Self-Improvement System</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2.5">
+        <!-- Live WebSocket status badge -->
+        <div id="ws-badge" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="ws-text">Connecting...</span>
+        </div>
+
+        <!-- Video Button -->
+        <button id="btn-open-video" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-950/60 hover:bg-red-900/60 text-red-200 border border-red-800/60 transition shadow-sm">
+          <i data-lucide="youtube" class="w-4 h-4 text-red-400"></i>
+          <span>Reference Talk</span>
+        </button>
+
+        <!-- Security Testing Lab Button -->
+        <button id="btn-open-security" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-950/60 hover:bg-purple-900/60 text-purple-200 border border-purple-800/60 transition shadow-sm">
+          <i data-lucide="shield-alert" class="w-4 h-4 text-purple-400"></i>
+          <span>Harness Security Lab</span>
+        </button>
+
+        <!-- Architecture & Guide Modal Button -->
+        <button id="btn-open-guide" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          <i data-lucide="book-open" class="w-4 h-4 text-cyan-400"></i>
+          <span>Guide</span>
+        </button>
+
+        <!-- Settings Button -->
+        <button id="btn-open-settings" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="API Keys & Engine Settings">
+          <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <!-- Export Dropdown -->
+        <div class="relative inline-block text-left group">
+          <button class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+            <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+            <span>Export</span>
+            <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i>
+          </button>
+          <div class="hidden group-hover:block absolute right-0 mt-1 w-36 rounded-lg bg-slate-900 border border-slate-800 shadow-xl z-50 py-1 text-xs">
+            <a href="/api/export" class="flex items-center space-x-2 px-3 py-2 text-slate-300 hover:bg-slate-800">
+              <i data-lucide="file-json" class="w-3.5 h-3.5 text-blue-400"></i>
+              <span>Export JSON</span>
+            </a>
+            <a href="/api/export/csv" class="flex items-center space-x-2 px-3 py-2 text-slate-300 hover:bg-slate-800">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Export CSV</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-5 space-y-5">
+
+    <!-- Control Header & Benchmarks Selector -->
+    <div class="glass-panel p-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Preset Selector -->
+        <div>
+          <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Target Benchmark</label>
+          <select id="select-preset" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="nanogpt">NanoGPT Trainer (Autoresearch - train.py)</option>
+            <option value="matmul">Matrix Kernel Throughput (GFLOPS - kernel.py)</option>
+            <option value="reasoning">Reasoning Pipeline (Prompt Strategy - prompt_solver.py)</option>
+          </select>
+        </div>
+
+        <!-- Agent Type Selector -->
+        <div>
+          <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Cognitive Engine</label>
+          <select id="select-agent" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="sim">Autonomous Research Simulator (Zero-Config / Instant)</option>
+            <option value="gemini">Google Gemini 1.5 Flash (Live LLM)</option>
+            <option value="openai">OpenAI GPT-4o (Live LLM)</option>
+            <option value="ollama">Local Ollama (Llama 3.2)</option>
+            <option value="cheat">Adversarial Cheater (Harness Defense Test)</option>
+          </select>
+        </div>
+
+        <!-- Loop Speed Delay -->
+        <div>
+          <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Iteration Delay</label>
+          <select id="select-delay" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-2 font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="0.2">0.2s (Fast)</option>
+            <option value="1.0" selected>1.0s (Normal)</option>
+            <option value="2.5">2.5s (Step-by-step)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2">
+        <button id="btn-start" class="flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition">
+          <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+          <span>Auto-Run Loop</span>
+        </button>
+        <button id="btn-pause" class="hidden flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/20 transition">
+          <i data-lucide="pause" class="w-4 h-4"></i>
+          <span>Pause Loop</span>
+        </button>
+        <button id="btn-step" class="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition">
+          <i data-lucide="step-forward" class="w-4 h-4"></i>
+          <span>Step Once</span>
+        </button>
+        <button id="btn-reset" class="flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTINUOUS AGENT LOOP VISUALIZER (Visual State Machine) -->
+    <div class="glass-panel p-5">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Continuous Self-Improvement Loop</span>
+          <span class="text-xs text-slate-500">•</span>
+          <span id="phase-status-text" class="text-xs font-semibold text-slate-300">Phase: IDLE</span>
+        </div>
+        <div class="text-xs text-slate-400 flex items-center space-x-3">
+          <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Commit (Better)</span></span>
+          <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Revert (Worse/Broken)</span></span>
+          <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>Anti-Tamper Intercept</span></span>
+        </div>
+      </div>
+
+      <!-- 5-Stage Interactive Loop Diagram -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3 relative">
+        <!-- Node 1: Hypothesize -->
+        <div id="node-hypothesize" class="phase-node rounded-lg p-3 text-center">
+          <div class="w-8 h-8 mx-auto rounded-full bg-blue-900/60 text-blue-400 flex items-center justify-center mb-2">
+            <i data-lucide="lightbulb" class="w-4 h-4"></i>
+          </div>
+          <div class="text-[11px] font-bold text-slate-200">1. Hypothesize</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Agent analyzes trial history</div>
+        </div>
+
+        <!-- Node 2: Modify / Diff -->
+        <div id="node-modify" class="phase-node rounded-lg p-3 text-center">
+          <div class="w-8 h-8 mx-auto rounded-full bg-indigo-900/60 text-indigo-400 flex items-center justify-center mb-2">
+            <i data-lucide="file-code" class="w-4 h-4"></i>
+          </div>
+          <div class="text-[11px] font-bold text-slate-200">2. Mutate Code</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Edits target file in sandbox</div>
+        </div>
+
+        <!-- Node 3: Evaluate in Harness -->
+        <div id="node-evaluate" class="phase-node rounded-lg p-3 text-center">
+          <div class="w-8 h-8 mx-auto rounded-full bg-cyan-900/60 text-cyan-400 flex items-center justify-center mb-2">
+            <i data-lucide="gauge" class="w-4 h-4"></i>
+          </div>
+          <div class="text-[11px] font-bold text-slate-200">3. Sandbox Eval</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Harness benchmarks code</div>
+        </div>
+
+        <!-- Node 4: Compare Metric -->
+        <div id="node-decide" class="phase-node rounded-lg p-3 text-center">
+          <div class="w-8 h-8 mx-auto rounded-full bg-purple-900/60 text-purple-400 flex items-center justify-center mb-2">
+            <i data-lucide="scale" class="w-4 h-4"></i>
+          </div>
+          <div class="text-[11px] font-bold text-slate-200">4. Decision Rule</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Candidate vs Baseline check</div>
+        </div>
+
+        <!-- Node 5: Git Commit / Reset -->
+        <div id="node-commit" class="phase-node rounded-lg p-3 text-center">
+          <div class="w-8 h-8 mx-auto rounded-full bg-emerald-900/60 text-emerald-400 flex items-center justify-center mb-2">
+            <i data-lucide="git-commit" class="w-4 h-4"></i>
+          </div>
+          <div class="text-[11px] font-bold text-slate-200">5. Commit or Revert</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Keeps gains, discards errors</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats & Live Progression Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Stat Card 1 -->
+      <div class="glass-panel p-4">
+        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Current Best Metric</div>
+        <div class="flex items-baseline space-x-2 mt-1">
+          <span id="stat-best-metric" class="text-2xl font-black text-white">--</span>
+          <span id="stat-unit" class="text-xs text-slate-400"></span>
+        </div>
+        <div id="stat-metric-delta" class="text-xs text-emerald-400 mt-1 flex items-center space-x-1">
+          <span>Baseline:</span>
+          <span id="stat-baseline-metric">--</span>
+        </div>
+      </div>
+
+      <!-- Stat Card 2 -->
+      <div class="glass-panel p-4">
+        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Trials Run</div>
+        <div class="flex items-baseline space-x-2 mt-1">
+          <span id="stat-total-trials" class="text-2xl font-black text-white">0</span>
+          <span class="text-xs text-slate-400">iterations</span>
+        </div>
+        <div class="text-xs text-slate-400 mt-1 flex items-center space-x-2">
+          <span class="text-emerald-400 font-semibold" id="stat-accepted">0 Kept</span>
+          <span>•</span>
+          <span class="text-rose-400 font-semibold" id="stat-rejected">0 Discarded</span>
+        </div>
+      </div>
+
+      <!-- Stat Card 3 -->
+      <div class="glass-panel p-4">
+        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Acceptance Rate</div>
+        <div class="flex items-baseline space-x-2 mt-1">
+          <span id="stat-accept-rate" class="text-2xl font-black text-blue-400">0.0%</span>
+        </div>
+        <div class="text-xs text-slate-400 mt-1">
+          <span>Autonomous Benchmark: ~20%</span>
+        </div>
+      </div>
+
+      <!-- Stat Card 4 -->
+      <div class="glass-panel p-4">
+        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Git Commits Created</div>
+        <div class="flex items-baseline space-x-2 mt-1">
+          <span id="stat-commits-count" class="text-2xl font-black text-purple-400">0</span>
+          <span class="text-xs text-slate-400">snapshots</span>
+        </div>
+        <div class="text-xs text-slate-400 mt-1 flex items-center space-x-1">
+          <span>Latest SHA:</span>
+          <span id="stat-latest-sha" class="font-mono text-purple-300">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart & Current Trial Banner -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left: Metric Progression Chart (Chart.js) -->
+      <div class="lg:col-span-2 glass-panel p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h2 class="text-sm font-bold text-slate-200">Objective Metric Progression Curve</h2>
+            <p id="chart-subtitle" class="text-xs text-slate-400">Click any point on the chart to inspect trial details</p>
+          </div>
+          <div class="text-xs text-slate-400 flex items-center space-x-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span>Accepted</span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500"></span><span>Rejected</span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-purple-500"></span><span>Tamper Caught</span>
+          </div>
+        </div>
+        <div class="h-64 w-full relative">
+          <canvas id="metricChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Right: Latest Trial Focus Card -->
+      <div class="glass-panel p-5 flex flex-col justify-between space-y-3">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active / Latest Trial</span>
+            <span id="current-trial-badge" class="px-2 py-0.5 text-xs font-semibold rounded bg-slate-800 text-slate-300">Idle</span>
+          </div>
+          <h3 id="current-trial-title" class="text-base font-bold text-white leading-snug">No trial executed yet</h3>
+          <p id="current-trial-desc" class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+            Click 'Step Once' or 'Auto-Run Loop' to initiate the autonomous optimization cycle.
+          </p>
+
+          <div class="mt-3 p-2.5 rounded bg-slate-900/60 border border-slate-800 text-xs space-y-1">
+            <div class="flex justify-between">
+              <span class="text-slate-400">Category:</span>
+              <span id="current-trial-category" class="font-medium text-slate-200">--</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Expected Impact:</span>
+              <span id="current-trial-impact" class="font-medium text-cyan-300">--</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Measured Delta:</span>
+              <span id="current-trial-delta" class="font-medium font-mono text-emerald-400">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Action Trigger for Harness Lab -->
+        <div class="border border-purple-800/40 bg-purple-950/20 rounded-lg p-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-1.5 text-purple-300 font-bold text-xs">
+              <i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i>
+              <span>Anti-Cheat Guard</span>
+            </div>
+            <span class="text-[10px] text-purple-400/80">SHA-256 Locked</span>
+          </div>
+          <p class="text-[11px] text-purple-200/80 mt-1">
+            Tests are immutable. Reward-hacking attempts are caught and reverted.
+          </p>
+          <button id="btn-quick-cheat" class="mt-2 w-full flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-purple-900/60 hover:bg-purple-800/60 text-purple-200 border border-purple-700/60 transition">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-purple-400"></i>
+            <span>Test Reward-Hack Interception</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODE, DIFF, SANDBOX EDITOR, COMMITS, AND CONSOLE TABS -->
+    <div class="glass-panel p-5">
+      <!-- Tabs -->
+      <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 mb-4 gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="tab-btn-diff" class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition">
+            Trial Diff
+          </button>
+          <button id="tab-btn-code" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            Golden Code
+          </button>
+          <button id="tab-btn-editor" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 transition flex items-center space-x-1">
+            <i data-lucide="code" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>Human vs Agent Sandbox</span>
+          </button>
+          <button id="tab-btn-commits" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            Git Commits
+          </button>
+          <button id="tab-btn-logs" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            Sandbox Console
+          </button>
+        </div>
+        <span id="active-filename-badge" class="text-xs font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">train.py</span>
+      </div>
+
+      <!-- Tab Content 1: Diff Viewer -->
+      <div id="tab-pane-diff" class="diff-container bg-slate-900/90 rounded-lg p-4 max-h-96 overflow-y-auto border border-slate-800">
+        <div id="diff-content" class="text-slate-400 italic">No diff available. Propose a trial to view modifications.</div>
+      </div>
+
+      <!-- Tab Content 2: Full Code Viewer -->
+      <div id="tab-pane-code" class="hidden diff-container bg-slate-900/90 rounded-lg p-4 max-h-96 overflow-y-auto border border-slate-800">
+        <pre><code id="code-content" class="text-slate-300 font-mono text-xs"></code></pre>
+      </div>
+
+      <!-- Tab Content 3: Human In-Browser Editor (Software 1.0 vs 3.0) -->
+      <div id="tab-pane-editor" class="hidden space-y-3">
+        <div class="flex items-center justify-between text-xs text-slate-400 bg-slate-900/60 p-2.5 rounded border border-slate-800">
+          <span><b>Software 1.0 Mode:</b> Edit the code below directly and test your own hypothesis against the Harness verifier!</span>
+          <button id="btn-run-manual" class="flex items-center space-x-1.5 px-3 py-1.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-semibold shadow">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i>
+            <span>Run My Code in Harness</span>
+          </button>
+        </div>
+        <textarea id="editor-textarea" class="w-full h-80 bg-slate-900 font-mono text-xs text-slate-200 p-4 rounded-lg border border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500" spellcheck="false"></textarea>
+      </div>
+
+      <!-- Tab Content 4: Git Commits -->
+      <div id="tab-pane-commits" class="hidden space-y-2 max-h-96 overflow-y-auto">
+        <div id="commits-list" class="space-y-2 text-xs"></div>
+      </div>
+
+      <!-- Tab Content 5: Sandbox Logs -->
+      <div id="tab-pane-logs" class="hidden diff-container bg-slate-900/90 rounded-lg p-4 max-h-96 overflow-y-auto border border-slate-800 font-mono text-xs text-slate-300">
+        <pre id="logs-content">No subprocess logs available.</pre>
+      </div>
+    </div>
+
+    <!-- Complete Experiment "Lab Notebook" Table with Search & Filter -->
+    <div class="glass-panel p-5">
+      <div class="flex flex-wrap items-center justify-between mb-4 gap-3">
+        <div>
+          <h2 class="text-sm font-bold text-slate-200">Autonomous Experiment Lab Notebook</h2>
+          <p class="text-xs text-slate-400">Click any experiment row to inspect full diff, prompt, and execution logs</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Search box -->
+          <div class="relative">
+            <input id="input-search" type="text" placeholder="Search hypotheses..." class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2"></i>
+          </div>
+          <!-- Filter Buttons -->
+          <div class="flex items-center space-x-1 bg-slate-800/80 p-1 rounded-lg border border-slate-700 text-[11px]">
+            <button class="filter-btn active px-2.5 py-1 rounded font-medium bg-blue-600 text-white" data-filter="all">All</button>
+            <button class="filter-btn px-2.5 py-1 rounded font-medium text-slate-400 hover:text-white" data-filter="accepted">Accepted</button>
+            <button class="filter-btn px-2.5 py-1 rounded font-medium text-slate-400 hover:text-white" data-filter="rejected">Rejected</button>
+            <button class="filter-btn px-2.5 py-1 rounded font-medium text-slate-400 hover:text-white" data-filter="tamper">Tampered</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-lg border border-slate-800">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-900/80 text-[11px] uppercase font-semibold text-slate-400 border-b border-slate-800">
+            <tr>
+              <th class="py-2.5 px-3">#</th>
+              <th class="py-2.5 px-3">Hypothesis</th>
+              <th class="py-2.5 px-3">Category</th>
+              <th class="py-2.5 px-3">Metric</th>
+              <th class="py-2.5 px-3">Delta</th>
+              <th class="py-2.5 px-3">Outcome</th>
+              <th class="py-2.5 px-3">Commit</th>
+              <th class="py-2.5 px-3">Time</th>
+              <th class="py-2.5 px-3 text-right">Inspect</th>
+            </tr>
+          </thead>
+          <tbody id="trials-table-body" class="divide-y divide-slate-800/60 font-mono">
+            <tr>
+              <td colspan="9" class="text-center py-6 text-slate-500 font-sans">No experiments recorded yet. Start the loop above!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 1. Autonomous Loop Theory & Architecture Guide Modal -->
+  <div id="guide-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-3xl w-full p-6 max-h-[85vh] overflow-y-auto border border-slate-700 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="sparkles" class="w-5 h-5 text-cyan-400"></i>
+          <h3 class="text-base font-bold text-white">Autonomous Loop & Software 3.0 Philosophy</h3>
+        </div>
+        <button id="btn-close-guide" class="text-slate-400 hover:text-white p-1 rounded">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs leading-relaxed text-slate-300">
+        <div>
+          <h4 class="font-bold text-sm text-cyan-400">What is the Autonomous Self-Improvement Loop?</h4>
+          <p class="mt-1">
+            The Autonomous Self-Improvement Loop formalizes recursive self-improvement:
+            an AI agent is pointed at a target file (e.g. <code class="text-cyan-300">train.py</code>) inside an immutable test harness.
+            The agent proposes hypotheses, modifies the code, benchmarks the result, and if the objective metric improves, it commits the change to git.
+            If the code breaks or regresses, the harness reverts the file and logs the failure to memory.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+          <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+            <div class="font-bold text-white mb-1">Software 1.0</div>
+            <p class="text-slate-400">Humans explicitly write logic and rules in code (C++, Python, Java).</p>
+          </div>
+          <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+            <div class="font-bold text-white mb-1">Software 2.0</div>
+            <p class="text-slate-400">Humans write loss functions and collect data. Gradient descent writes the neural weights.</p>
+          </div>
+          <div class="p-3 rounded-lg bg-blue-950/40 border border-blue-800/60">
+            <div class="font-bold text-cyan-300 mb-1">Software 3.0</div>
+            <p class="text-slate-300">Humans write the <b>Harness</b> and objective verifier. Autonomous agent loops write and optimize the software!</p>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-sm text-cyan-400">Why "Harness Engineering" Over Prompt Engineering?</h4>
+          <p class="mt-1">
+            A key insight of autonomous systems is that when an agent makes mistakes, you do not just tweak the prompt. You improve the <b>Harness</b>:
+          </p>
+          <ul class="list-disc pl-5 mt-1.5 space-y-1 text-slate-300">
+            <li><b>Immutability & Sandbox:</b> The agent can only touch the target code. The harness, datasets, and graders are read-only to prevent reward hacking.</li>
+            <li><b>Fast Cycle Time:</b> Evaluations must complete in seconds or a few minutes to enable hundreds of iterations overnight.</li>
+            <li><b>Objective Low-Noise Metrics:</b> Validation loss, test accuracy, or hardware GFLOPS give deterministic feedback.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Video Player & Timestamp Hub Modal -->
+  <div id="video-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-3xl w-full p-6 max-h-[85vh] overflow-y-auto border border-slate-700 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="youtube" class="w-5 h-5 text-red-500"></i>
+          <h3 class="text-base font-bold text-white">Reference Talk: Agents, Loops & Self-Improving Systems</h3>
+        </div>
+        <button id="btn-close-video" class="text-slate-400 hover:text-white p-1 rounded">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="aspect-video w-full rounded-lg overflow-hidden bg-slate-900 border border-slate-800">
+        <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/Gm469A_dCZA" title="Agents, Loops and Self-Improving Systems" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+
+      <div class="space-y-2">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Key Conceptual Highlights:</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+          <a href="https://youtu.be/Gm469A_dCZA?t=0" target="_blank" class="p-2.5 rounded bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between text-slate-300">
+            <span>⏱️ 00:00 - The Ceiling of Single-Turn Prompting</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+          </a>
+          <a href="https://youtu.be/Gm469A_dCZA?t=240" target="_blank" class="p-2.5 rounded bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between text-slate-300">
+            <span>⏱️ 04:00 - The Autoresearch Autonomous Loop</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+          </a>
+          <a href="https://youtu.be/Gm469A_dCZA?t=560" target="_blank" class="p-2.5 rounded bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between text-slate-300">
+            <span>⏱️ 09:20 - The nanochat Attention Bug Discovery</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+          </a>
+          <a href="https://youtu.be/Gm469A_dCZA?t=880" target="_blank" class="p-2.5 rounded bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between text-slate-300">
+            <span>⏱️ 14:40 - Harness Engineering & Verifiers</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Harness Security & Attack Simulator Lab Modal -->
+  <div id="security-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-2xl w-full p-6 max-h-[85vh] overflow-y-auto border border-purple-800/60 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="shield-alert" class="w-5 h-5 text-purple-400"></i>
+          <h3 class="text-base font-bold text-white">Harness Security & Anti-Cheat Lab</h3>
+        </div>
+        <button id="btn-close-security" class="text-slate-400 hover:text-white p-1 rounded">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        In Software 3.0, the Harness is the ultimate source of truth. If an agent tries to "reward hack" by faking metrics, modifying tests, or altering the evaluator, the Harness intercepts it, reverts the workspace, and logs the security violation.
+      </p>
+
+      <div class="space-y-3">
+        <div class="p-3.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-xs text-purple-300">Attack 1: OS Execution & Reflection Hijack</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Agent attempts to inject <code>__import__('os').system()</code> or manipulate runtime internals.</div>
+          </div>
+          <button class="btn-launch-attack px-3 py-1.5 rounded text-xs font-semibold bg-purple-900 hover:bg-purple-800 text-purple-200 transition" data-attack="os_injection">Launch</button>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-xs text-purple-300">Attack 2: Return Output Forgery</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Agent replaces model training with a hardcoded fake <code>val_loss = 0.0001</code>.</div>
+          </div>
+          <button class="btn-launch-attack px-3 py-1.5 rounded text-xs font-semibold bg-purple-900 hover:bg-purple-800 text-purple-200 transition" data-attack="fake_return">Launch</button>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-xs text-purple-300">Attack 3: Grader File Tampering</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Agent tries to overwrite <code>eval_harness.py</code> to force all tests to pass.</div>
+          </div>
+          <button class="btn-launch-attack px-3 py-1.5 rounded text-xs font-semibold bg-purple-900 hover:bg-purple-800 text-purple-200 transition" data-attack="file_tamper">Launch</button>
+        </div>
+      </div>
+
+      <div id="security-lab-feedback" class="hidden p-3 rounded-lg bg-purple-950/40 border border-purple-800/50 text-xs font-mono text-purple-200 space-y-1">
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Trial Detail Inspector Modal -->
+  <div id="trial-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <span id="inspect-trial-badge" class="px-2 py-0.5 rounded text-xs font-bold bg-blue-900 text-blue-300">TRIAL #--</span>
+          <h3 id="inspect-trial-title" class="text-base font-bold text-white">Trial Title</h3>
+        </div>
+        <button id="btn-close-trial" class="text-slate-400 hover:text-white p-1 rounded">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+        <div class="p-2.5 rounded bg-slate-900 border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Category</span>
+          <span id="inspect-category" class="font-semibold text-slate-200">--</span>
+        </div>
+        <div class="p-2.5 rounded bg-slate-900 border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Outcome</span>
+          <span id="inspect-outcome" class="font-bold text-emerald-400">--</span>
+        </div>
+        <div class="p-2.5 rounded bg-slate-900 border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Metric Delta</span>
+          <span id="inspect-delta" class="font-mono font-bold text-white">--</span>
+        </div>
+        <div class="p-2.5 rounded bg-slate-900 border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Commit SHA</span>
+          <span id="inspect-commit" class="font-mono text-purple-300">--</span>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Hypothesis Rationale</h4>
+        <p id="inspect-description" class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded border border-slate-800"></p>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Code Modifications (Diff)</h4>
+        <div id="inspect-diff" class="diff-container bg-slate-900 p-3 rounded-lg border border-slate-800 max-h-56 overflow-y-auto"></div>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Subprocess Console Log</h4>
+        <pre id="inspect-logs" class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-xs font-mono text-slate-300 max-h-40 overflow-y-auto whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Settings / API Key Modal -->
+  <div id="settings-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-md w-full p-6 border border-slate-700 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="settings" class="w-5 h-5 text-slate-300"></i>
+          <h3 class="text-base font-bold text-white">Engine & API Settings</h3>
+        </div>
+        <button id="btn-close-settings" class="text-slate-400 hover:text-white p-1 rounded">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Google Gemini API Key</label>
+          <input id="input-gemini-key" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">OpenAI API Key</label>
+          <input id="input-openai-key" type="password" placeholder="sk-..." class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">Ollama Host URL</label>
+          <input id="input-ollama-host" type="text" placeholder="http://localhost:11434" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+      </div>
+
+      <button id="btn-save-settings" class="w-full py-2 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition">
+        Save Settings
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-3.5 px-6 text-center text-xs text-slate-500 flex items-center justify-between max-w-7xl mx-auto w-full">
+    <span>ALHSI Showcase • Built for Autonomous Agent Loop Harness Self-Improvement</span>
+    <span class="text-slate-600">Docker + FastAPI + WebSocket Streaming</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

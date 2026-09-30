@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-ai-alhsi"
+version = "1.0.0"
+description = "Agent-Loop-Harness Self-Improvement: An interactive showcase of autonomous autoresearch and Software 3.0 workflow"
+authors = [{ name = "AI Engineering Lab" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.28.0",
+    "websockets>=12.0",
+    "numpy>=1.24.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.scripts]
+alhsi = "alhsi.cli:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
